@@ -267,7 +267,10 @@ impl QingjianInputController {
     fn dispatch_event(&self, event: &NSEvent, client: TextClient<'_>) -> bool {
         let app_id = client.bundle_identifier();
         host::with(|h| {
-            h.reload_config_if_changed();
+            // 首键只检查配置时间，不把词库目录扫描放进逐键路径。
+            if h.settings.reload_if_changed() {
+                h.apply_config(false);
+            }
             h.engine.set_application(app_id.clone());
             h.prepare_auto_language(app_id.as_deref());
         });
