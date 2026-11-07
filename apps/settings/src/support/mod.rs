@@ -69,11 +69,12 @@ pub enum Feature {
     SingleChars,
     /// 候选字字重。
     CandidateFontWeight,
+    AutoLanguage,
 }
 
 impl Feature {
     #[cfg(test)]
-    pub const ALL: [Self; 32] = [
+    pub const ALL: [Self; 33] = [
         Self::AuxCode,
         Self::Schemes,
         Self::SwitchKeys,
@@ -106,6 +107,7 @@ impl Feature {
         Self::TranslatePanel,
         Self::SingleChars,
         Self::CandidateFontWeight,
+        Self::AutoLanguage,
     ];
 
     /// 当前平台显示这一项。
@@ -169,6 +171,7 @@ impl Feature {
             Self::SingleChars => [Todo, Yes, Todo],
             // Linux 用 Fcitx 自己的候选面板
             Self::CandidateFontWeight => [Todo, Yes, No],
+            Self::AutoLanguage => [Yes, Todo, Todo],
         }
     }
 
@@ -208,6 +211,7 @@ impl Feature {
             Self::TranslatePanel => "打开符号面板的翻译组",
             Self::SingleChars => "组句时切换单字模式",
             Self::CandidateFontWeight => "候选字粗细",
+            Self::AutoLanguage => "自动语言",
         }
     }
 
@@ -255,6 +259,7 @@ impl Feature {
                 (PageId::Shortcuts, "shortcut.single_chars"),
             ],
             Self::CandidateFontWeight => &[(PageId::Appearance, "appearance.candidate_weight")],
+            Self::AutoLanguage => &[],
             Self::SwitchKeyCombos
             | Self::SystemCtrlSpace
             | Self::EnglishPunctuation

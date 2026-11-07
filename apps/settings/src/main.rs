@@ -5,6 +5,7 @@
 //! - `--png <目录>`：不开窗口，拷一份配置到目录里，按脚本点几下，每步存一张截图。
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
+mod auto_language;
 mod docs;
 mod i18n;
 mod jobs;
@@ -71,6 +72,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "--png" => {
                 let directory = args.next().map(PathBuf::from).ok_or("--png 后面要给目录")?;
                 return offscreen::snapshot::run(config.as_deref(), &directory);
+            }
+            "--auto-language-png" => {
+                let directory = args
+                    .next()
+                    .map(PathBuf::from)
+                    .ok_or("--auto-language-png requires a directory")?;
+                return offscreen::auto_language::run(&directory);
             }
             other => return Err(format!("不认识的参数：{other}").into()),
         }

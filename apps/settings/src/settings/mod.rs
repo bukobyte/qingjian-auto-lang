@@ -2,6 +2,7 @@
 //! 结构体与构造在这里，各职责的 `impl` 在子模块。
 
 mod app;
+mod auto_language;
 mod clipboard;
 mod config;
 mod fields;
@@ -47,6 +48,8 @@ pub struct Settings {
     path: PathBuf,
 
     pub config: Config,
+
+    pub auto_language: crate::auto_language::AutoLanguage,
 
     pub themes: ThemeLibrary,
 
@@ -169,6 +172,7 @@ impl Settings {
             path,
             config,
             config_error,
+            auto_language: crate::auto_language::AutoLanguage::default(),
             themes,
             page: PageId::Input,
             system_dark: false,

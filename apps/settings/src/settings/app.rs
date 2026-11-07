@@ -54,7 +54,11 @@ impl App for Settings {
                 for id in FieldId::ALL {
                     self.commit(id);
                 }
+                self.auto_language.stop();
                 self.page = page;
+                if page == PageId::AutoLanguage {
+                    self.auto_language.start(&self.path, self.waker.clone());
+                }
                 self.recording = None;
                 self.close_phrase();
                 if page == PageId::Dictionaries {
@@ -70,6 +74,7 @@ impl App for Settings {
                     self.open_vocabulary();
                 }
             }
+            Message::AutoLanguage(action) => self.auto_language_message(action),
             Message::SystemCtrlSpace(on) => self.set_ctrl_space(on),
             Message::Record(shortcut) => self.recording = Some(shortcut),
             Message::StopRecording => self.recording = None,
@@ -306,6 +311,7 @@ impl App for Settings {
 
     fn wake(&mut self) -> bool {
         let mut changed = self.search.expire(Instant::now());
+        changed |= self.auto_language.finish();
         if let Some(text) = self.cloud_test.finish() {
             self.notice = Some(("cloud", text));
             changed = true;
@@ -333,7 +339,13 @@ impl App for Settings {
 
     /// 切回设置窗口时重扫输入方案：用户多半是刚在访达 / 资源管理器里往 `schemes/` 放了方案。
     fn set_active(&mut self, active: bool) {
+        if !active {
+            self.auto_language.stop();
+        }
         if active {
+            if self.page == PageId::AutoLanguage {
+                self.auto_language.start(&self.path, self.waker.clone());
+            }
             self.library.rescan_schemes();
         }
     }

@@ -3,6 +3,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Popup {
     Font,
+    AutoLanguage(crate::auto_language::Target),
     Scheme,
     /// 形码方案：关、内置五笔、用户目录里的方案。
     Code,

@@ -5,7 +5,7 @@ pub mod icons;
 mod page;
 mod pages;
 pub mod palette;
-mod parts;
+pub(crate) mod parts;
 pub mod previews;
 mod sidebar;
 
@@ -64,6 +64,7 @@ pub fn view(
     {
         children.push(menu);
     }
+    crate::auto_language::preview(ui, &page)?;
     let root = ui.scene().node(
         Style {
             size: Size {
@@ -79,12 +80,18 @@ pub fn view(
     let key = ui.key("root");
     let menu_open = settings.menu.is_some();
     let dialog_open = settings.phrase.is_some();
+    let auto_dialog = settings.auto_language.picker_open;
     ui.interact(
         root,
         key,
         Interact::new().on_key(move |press| {
             if menu_open && press.key == KeyCode::Escape {
                 return Some(Message::CloseMenu);
+            }
+            if auto_dialog && press.key == KeyCode::Escape {
+                return Some(Message::AutoLanguage(
+                    crate::auto_language::Action::ClosePicker,
+                ));
             }
             if dialog_open && press.key == KeyCode::Escape {
                 return Some(Message::ClosePhrase);
@@ -148,6 +155,7 @@ fn page_children(
         PageId::Stats => pages::stats::stats(ui, page)?,
         PageId::Vocabulary => pages::vocabulary::vocabulary(ui, page)?,
         PageId::Advanced => pages::advanced::advanced(ui, page)?,
+        PageId::AutoLanguage => crate::auto_language::page(ui, page)?,
         PageId::Experimental => pages::experimental::experimental(ui, page)?,
         PageId::About => pages::about::about(ui, page)?,
     })

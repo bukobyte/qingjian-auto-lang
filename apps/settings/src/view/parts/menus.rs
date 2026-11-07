@@ -19,6 +19,7 @@ const CODE_OFF_KEY: &str = "off";
 pub fn anchor(popup: Popup) -> &'static str {
     match popup {
         Popup::Font => "font",
+        Popup::AutoLanguage(_) => "auto-language",
         Popup::Scheme => "scheme",
         Popup::Code => "code",
         Popup::LearningLanguage => "learning-language",
@@ -104,6 +105,9 @@ pub fn menu(
     popup: Popup,
     window: (f32, f32),
 ) -> Result<Option<NodeId>, RenderError> {
+    if let Popup::AutoLanguage(target) = popup {
+        return crate::auto_language::menu(ui, page, target, window);
+    }
     let Some(rect) = ui.rect(ui.key(anchor(popup))) else {
         return Ok(None);
     };
@@ -113,6 +117,7 @@ pub fn menu(
     };
     let (key, labels, values, selected): (&str, Vec<String>, Vec<toml_edit::Value>, Option<usize>) =
         match popup {
+            Popup::AutoLanguage(_) => unreachable!("handled before regular menus"),
             Popup::Font => {
                 let families = page.settings.fonts.as_deref().unwrap_or_default();
                 let labels = std::iter::once(tr("common.system_font").to_owned())

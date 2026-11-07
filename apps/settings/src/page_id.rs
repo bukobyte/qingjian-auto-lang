@@ -17,12 +17,13 @@ pub enum PageId {
     Stats,
     Vocabulary,
     Advanced,
+    AutoLanguage,
     Experimental,
     About,
 }
 
 impl PageId {
-    pub const ALL: [Self; 13] = [
+    pub const ALL: [Self; 14] = [
         Self::Input,
         Self::Candidates,
         Self::Language,
@@ -34,12 +35,16 @@ impl PageId {
         Self::Stats,
         Self::Vocabulary,
         Self::Advanced,
+        Self::AutoLanguage,
         Self::Experimental,
         Self::About,
     ];
 
     /// 这个平台的侧栏有这一页（实验功能只在做了的平台出现）。
     pub fn shown(self) -> bool {
+        if self == Self::AutoLanguage {
+            return Feature::AutoLanguage.here();
+        }
         self != Self::Experimental
             || Feature::ExperimentalModels.here()
             || Feature::Clipboard.here()
@@ -58,6 +63,7 @@ impl PageId {
             Self::Stats => tr("page.stats"),
             Self::Vocabulary => tr("page.vocabulary"),
             Self::Advanced => tr("page.advanced"),
+            Self::AutoLanguage => tr("page.auto_language"),
             Self::Experimental => tr("page.experimental"),
             Self::About => tr("page.about"),
         }
@@ -76,6 +82,7 @@ impl PageId {
             Self::Stats => Glyph::Stats,
             Self::Vocabulary => Glyph::Vocabulary,
             Self::Advanced => Glyph::Advanced,
+            Self::AutoLanguage => Glyph::Language,
             Self::Experimental => Glyph::Experimental,
             Self::About => Glyph::About,
         }
