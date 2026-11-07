@@ -1,3 +1,5 @@
+> Trang này giữ lại phần giới thiệu gốc của Qingjian. Về tính năng tự động chuyển ngôn ngữ và lời cảm ơn của bản fork này, xem README hiện tại bằng [tiếng Trung giản thể](../../README.md) hoặc [tiếng Anh](../../README.en.md).
+
 <p align="center"><a href="../../README.md">简体中文</a> | <a href="README.zh-Hant.md">繁體中文</a> | <a href="README.en.md">English</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <b>Tiếng Việt</b> | <a href="README.de.md">Deutsch</a></p>
 
 <p align="center">

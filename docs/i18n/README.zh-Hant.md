@@ -1,3 +1,5 @@
+> 本頁保留上游青簡的原始介紹。本 fork 的「自動語言」功能與致謝，請見目前的[簡體中文首頁](../../README.md)或 [English](../../README.en.md)。
+
 <p align="center"><a href="../../README.md">简体中文</a> | <b>繁體中文</b> | <a href="README.en.md">English</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.vi.md">Tiếng Việt</a> | <a href="README.de.md">Deutsch</a></p>
 
 <p align="center">

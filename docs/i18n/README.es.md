@@ -1,3 +1,5 @@
+> Esta página conserva la presentación original de Qingjian. Para conocer la función de cambio automático de idioma de este fork y los agradecimientos, consulte el README actual en [chino simplificado](../../README.md) o [inglés](../../README.en.md).
+
 <p align="center"><a href="../../README.md">简体中文</a> | <a href="README.zh-Hant.md">繁體中文</a> | <a href="README.en.md">English</a> | <a href="README.ja.md">日本語</a> | <b>Español</b> | <a href="README.vi.md">Tiếng Việt</a> | <a href="README.de.md">Deutsch</a></p>
 
 <p align="center">

@@ -1,3 +1,5 @@
+> This page preserves the upstream Qingjian introduction. For this fork’s Auto Language feature and acknowledgements, see the current [English README](../../README.en.md) or [简体中文](../../README.md).
+
 <p align="center"><a href="../../README.md">简体中文</a> | <a href="README.zh-Hant.md">繁體中文</a> | <b>English</b> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.vi.md">Tiếng Việt</a> | <a href="README.de.md">Deutsch</a></p>
 
 <p align="center">
