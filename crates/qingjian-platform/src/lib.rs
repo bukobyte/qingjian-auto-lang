@@ -3,6 +3,7 @@
 //! 这里的类型必须可序列化：macOS / Linux 上 Core 与壳同进程，Windows 上 Core 在独立
 //! Server 进程，同一套类型两边都用。
 
+pub mod auto_language;
 pub mod aux_schemes;
 pub mod candidate_menu;
 pub mod code_schemes;
@@ -33,4 +34,8 @@ pub use config::{
     export_phrases, export_settings, import_phrases, import_settings, scheme_label, scheme_name,
 };
 pub use error::ConfigError;
+pub use qingjian_auto_language::{
+    AppInfo, AutoLanguageConfig, InputLanguage, LanguageRule, MACOS_LANGUAGES, RecentApps,
+    RuleSession, RuntimeSnapshot, SNAPSHOT_VERSION,
+};
 pub use scheme::{SchemeMeta, SchemeSlot};

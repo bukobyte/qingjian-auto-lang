@@ -1,6 +1,16 @@
 [meta]
 name = "English"
 
+[auto_language]
+chinese = "Chinese input"
+english = "English input"
+vietnamese = "Vietnamese input"
+japanese = "Japanese input"
+hint_chinese = "Switched to Chinese input"
+hint_english = "Switched to English input"
+hint_vietnamese = "Switched to Vietnamese input"
+hint_japanese = "Switched to Japanese input"
+
 [candidate_menu]
 edit_translation = "Edit translation…"
 regenerate_translation = "Regenerate translation with the model"

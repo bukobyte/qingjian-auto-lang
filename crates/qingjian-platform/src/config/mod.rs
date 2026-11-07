@@ -1,5 +1,6 @@
 mod appearance;
 mod apps;
+mod auto_language;
 mod aux_code;
 mod candidate_renderer;
 mod clipboard;
@@ -89,6 +90,9 @@ pub use update::{UpdateChannel, UpdateConfig};
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
+    /// 按应用自动设置内部输入语言。
+    pub auto_language: qingjian_auto_language::AutoLanguageConfig,
+
     /// 常规：学习语言、每页候选数、翻页键、外观。
     pub general: GeneralConfig,
 

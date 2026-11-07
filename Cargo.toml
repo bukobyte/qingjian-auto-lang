@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
+    "crates/qingjian-auto-language",
     "crates/qingjian-core",
     "crates/qingjian-dictionary",
     "crates/qingjian-translate",
@@ -31,6 +32,7 @@ repository = "https://github.com/qingjian-team/qingjian"
 all = "warn"
 
 [workspace.dependencies]
+qingjian-auto-language = { path = "crates/qingjian-auto-language" }
 # 内部 crate
 qingjian-core = { path = "crates/qingjian-core" }
 qingjian-dictionary = { path = "crates/qingjian-dictionary" }

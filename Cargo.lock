@@ -4151,6 +4151,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "qingjian-auto-language"
+version = "0.1.1"
+dependencies = [
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
 name = "qingjian-cli"
 version = "0.1.1"
 dependencies = [
@@ -4429,6 +4438,7 @@ version = "0.1.1"
 dependencies = [
  "bamboo-slip-i18n",
  "libc",
+ "qingjian-auto-language",
  "qingjian-core",
  "qingjian-dictionary",
  "qingjian-format",
