@@ -1,0 +1,223 @@
+<!-- 交互原型：青简设置里的最近十个应用与语言规则；仅内存模拟，不读取系统、不修改输入法。 -->
+<div id="qj-auto-language-prototype">
+  <div class="qj-prototype-note">交互原型 · 示例应用与模拟切换</div>
+  <div class="qj-window">
+    <aside class="qj-sidebar" aria-label="青简设置导航">
+      <div class="qj-traffic" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="qj-brand"><i data-lucide="sprout" aria-hidden="true"></i> 青简</div>
+      <div class="qj-navigation">
+        <span><i data-lucide="keyboard" aria-hidden="true"></i>输入</span>
+        <span><i data-lucide="panel-top" aria-hidden="true"></i>候选</span>
+        <span><i data-lucide="arrow-left-right" aria-hidden="true"></i>中英文</span>
+        <span><i data-lucide="contrast" aria-hidden="true"></i>外观</span>
+        <span><i data-lucide="command" aria-hidden="true"></i>快捷键</span>
+        <span><i data-lucide="message-square" aria-hidden="true"></i>自定义短语</span>
+        <span><i data-lucide="book-open" aria-hidden="true"></i>词库</span>
+        <span><i data-lucide="cloud" aria-hidden="true"></i>云服务</span>
+        <span><i data-lucide="chart-no-axes-column" aria-hidden="true"></i>统计</span>
+        <span><i data-lucide="book-marked" aria-hidden="true"></i>生词本</span>
+        <span><i data-lucide="terminal" aria-hidden="true"></i>高级</span>
+        <span class="qj-nav-selected" aria-current="page"><i data-lucide="repeat-2" aria-hidden="true"></i>自动语言</span>
+        <span><i data-lucide="flask-conical" aria-hidden="true"></i>实验功能</span>
+        <span><i data-lucide="info" aria-hidden="true"></i>关于</span>
+      </div>
+      <div class="qj-sidebar-footer">简体中文</div>
+    </aside>
+    <main class="qj-content">
+      <header><h2>自动语言</h2><span class="qj-platform">macOS</span></header>
+      <section class="qj-section">
+        <div class="qj-setting"><div><h3>按应用自动切换</h3><p>进入应用时，使用为它设置的输入语言</p></div><label class="qj-switch"><input type="checkbox" id="qj-enabled" aria-label="按应用自动切换"><span></span></label></div>
+        <div class="qj-setting"><label for="qj-default">未设置的应用</label><select id="qj-default"></select></div>
+      </section>
+      <div class="qj-section-title">刚才使用的应用</div>
+      <section class="qj-current" aria-label="刚才使用的应用">
+        <div id="qj-current-app"></div>
+        <div class="qj-quick"><label for="qj-current-language">进入时</label><select id="qj-current-language" aria-label="刚才使用的应用的输入语言"></select></div>
+      </section>
+      <div class="qj-section-heading"><div class="qj-section-title">已设置的应用 <span id="qj-rule-count"></span></div><button type="button" class="qj-add" id="qj-add"><i data-lucide="plus" aria-hidden="true"></i>添加应用</button></div>
+      <section class="qj-rules" id="qj-rules" aria-label="已配置的应用语言规则"></section>
+      <div class="qj-section-title">切换提示</div>
+      <section class="qj-section">
+        <div class="qj-setting"><label for="qj-hint">显示切换提示</label><label class="qj-switch"><input type="checkbox" id="qj-hint"><span></span></label></div>
+        <div class="qj-setting"><span class="qj-secondary">语言变化时，在屏幕角落短暂显示</span><button type="button" id="qj-preview">预览提示</button></div>
+      </section>
+      <p class="qj-footnote">应用内手动切换会保持，离开后再进入时恢复该应用的设置。</p>
+      <p id="qj-feedback" class="qj-feedback" role="status" aria-live="polite"></p>
+    </main>
+    <div class="qj-osd" id="qj-osd" role="status" aria-live="polite" hidden><span id="qj-osd-mark"></span><span id="qj-osd-text"></span></div>
+    <div class="qj-overlay" id="qj-picker-overlay" hidden>
+      <section class="qj-picker" role="dialog" aria-modal="true" aria-labelledby="qj-picker-title">
+        <div class="qj-picker-head"><div><h3 id="qj-picker-title">最近使用的应用</h3><p>最多 10 个，重复使用会排到最前面</p></div><button type="button" id="qj-close" aria-label="关闭应用选择"><i data-lucide="x" aria-hidden="true"></i></button></div>
+        <div id="qj-recents" class="qj-recents" aria-label="最近十个应用"></div>
+        <p class="qj-picker-help">没有找到？先切换到那个应用，再回到这里。</p>
+        <div class="qj-picker-footer"><label for="qj-picker-language">进入该应用时</label><select id="qj-picker-language"></select><button type="button" class="qj-primary" id="qj-save">保存设置</button></div>
+      </section>
+    </div>
+  </div>
+  <section class="qj-demo" aria-label="原型演示控制">
+    <div class="qj-demo-title">试一下实际使用顺序</div>
+    <div class="qj-demo-controls"><label for="qj-demo-app">切到应用，再回设置</label><select id="qj-demo-app"></select><button type="button" id="qj-demo-visit">模拟进入</button><label for="qj-demo-language">手动语言</label><select id="qj-demo-language"></select><button type="button" id="qj-demo-manual">模拟手动切换</button></div>
+    <p id="qj-demo-status" role="status" aria-live="polite"></p>
+  </section>
+</div>
+<style>
+#qj-auto-language-prototype{--qj-bg:light-dark(#f5f7f2,#141b15);--qj-side:light-dark(#eaf0e5,#1c241d);--qj-surface:light-dark(#fff,#20291f);--qj-text:light-dark(#273323,#e0e7dd);--qj-muted:light-dark(#65745d,#a4b19f);--qj-line:light-dark(#dce4d7,#344030);--qj-green:light-dark(#46692c,#badb8d);--qj-active:light-dark(#e0edcf,#334029);--qj-button:light-dark(#eef3e8,#2b3627);--qj-accent:light-dark(#46692c,#badb8d);--qj-onaccent:light-dark(#fff,#1c2813);font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--qj-text);width:100%}
+#qj-auto-language-prototype *{box-sizing:border-box}
+#qj-auto-language-prototype [hidden]{display:none!important}
+#qj-auto-language-prototype h2,#qj-auto-language-prototype h3,#qj-auto-language-prototype p{margin:0}
+#qj-auto-language-prototype h2{font-size:21px;font-weight:500}
+#qj-auto-language-prototype h3{font-size:14px;font-weight:500}
+#qj-auto-language-prototype button,#qj-auto-language-prototype select{font:inherit;color:inherit;background:var(--qj-button);border:1px solid var(--qj-line);border-radius:8px;padding:7px 12px;min-height:36px;cursor:default}
+#qj-auto-language-prototype button:hover{background:var(--qj-active)}
+#qj-auto-language-prototype button:focus-visible,#qj-auto-language-prototype select:focus-visible,#qj-auto-language-prototype input:focus-visible{outline:2px solid var(--qj-accent);outline-offset:3px}
+#qj-auto-language-prototype button:disabled{opacity:.45}
+#qj-auto-language-prototype i,#qj-auto-language-prototype svg{width:18px;height:18px;flex-shrink:0}
+#qj-auto-language-prototype .qj-prototype-note{color:var(--qj-muted);font-size:12px;margin:0 0 10px}
+#qj-auto-language-prototype .qj-window{display:grid;grid-template-columns:202px minmax(0,1fr);background:var(--qj-bg);border:1px solid var(--qj-line);border-radius:14px;position:relative;min-height:850px}
+#qj-auto-language-prototype .qj-sidebar{background:var(--qj-side);border-radius:14px 0 0 14px;padding:16px 10px;display:flex;flex-direction:column}
+#qj-auto-language-prototype .qj-traffic{display:flex;gap:7px;margin:0 8px 17px}
+#qj-auto-language-prototype .qj-traffic span{width:10px;height:10px;border-radius:50%;background:var(--qj-muted);opacity:.5}
+#qj-auto-language-prototype .qj-brand{font-size:25px;display:flex;align-items:center;gap:9px;padding:0 12px 25px}
+#qj-auto-language-prototype .qj-brand svg{color:var(--qj-green);width:24px;height:30px}
+#qj-auto-language-prototype .qj-navigation{display:grid;gap:4px}
+#qj-auto-language-prototype .qj-navigation>span{display:flex;gap:11px;align-items:center;padding:10px 12px;border-radius:9px;white-space:nowrap}
+#qj-auto-language-prototype .qj-nav-selected{background:var(--qj-active);color:var(--qj-green);font-weight:500}
+#qj-auto-language-prototype .qj-sidebar-footer{margin-top:auto;padding:22px 12px 2px;color:var(--qj-muted)}
+#qj-auto-language-prototype .qj-content{padding:36px 32px 24px;min-width:0}
+#qj-auto-language-prototype header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+#qj-auto-language-prototype .qj-platform{font-size:12px;color:var(--qj-muted)}
+#qj-auto-language-prototype .qj-section{border:1px solid var(--qj-line);border-radius:11px;background:var(--qj-surface)}
+#qj-auto-language-prototype .qj-setting{padding:15px 17px;display:flex;justify-content:space-between;gap:14px;align-items:center}
+#qj-auto-language-prototype .qj-setting+.qj-setting{border-top:1px solid var(--qj-line)}
+#qj-auto-language-prototype .qj-setting p{color:var(--qj-muted);font-size:12px;margin-top:4px}
+#qj-auto-language-prototype .qj-switch{position:relative;display:inline-flex;flex-shrink:0;width:40px;height:24px}
+#qj-auto-language-prototype .qj-switch input{position:absolute;inset:0;opacity:0;z-index:1;margin:0;cursor:default;width:100%;height:100%}
+#qj-auto-language-prototype .qj-switch>span{width:100%;height:100%;border-radius:20px;background:var(--qj-line)}
+#qj-auto-language-prototype .qj-switch>span:after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--qj-surface)}
+#qj-auto-language-prototype .qj-switch input:checked+span{background:var(--qj-accent)}
+#qj-auto-language-prototype .qj-switch input:checked+span:after{left:19px;background:var(--qj-onaccent)}
+#qj-auto-language-prototype .qj-switch input:focus-visible+span{outline:2px solid var(--qj-accent);outline-offset:3px}
+#qj-auto-language-prototype .qj-section-title{color:var(--qj-muted);font-weight:500;margin:25px 0 10px}
+#qj-auto-language-prototype .qj-current{background:var(--qj-surface);border:1px solid var(--qj-line);border-radius:11px;padding:17px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+#qj-auto-language-prototype .qj-app-info{display:flex;align-items:center;gap:11px;min-width:0}
+#qj-auto-language-prototype .qj-app-icon{width:35px;height:35px;display:grid;place-items:center;flex-shrink:0;background:var(--qj-button);border:1px solid var(--qj-line);border-radius:9px}
+#qj-auto-language-prototype .qj-app-label{overflow-wrap:anywhere;min-width:0}
+#qj-auto-language-prototype .qj-app-detail{color:var(--qj-muted);font-size:12px;margin-top:3px}
+#qj-auto-language-prototype .qj-quick{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+#qj-auto-language-prototype .qj-quick label{font-size:12px;color:var(--qj-muted)}
+#qj-auto-language-prototype .qj-section-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:25px 0 10px}
+#qj-auto-language-prototype .qj-section-heading .qj-section-title{margin:0}
+#qj-auto-language-prototype .qj-section-title>span{font-size:12px;margin-left:5px}
+#qj-auto-language-prototype .qj-add{display:flex;gap:5px;align-items:center;font-size:12px;padding:6px 9px}
+#qj-auto-language-prototype .qj-rules{border:1px solid var(--qj-line);border-radius:11px;background:var(--qj-surface)}
+#qj-auto-language-prototype .qj-rule{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:13px 15px}
+#qj-auto-language-prototype .qj-rule+.qj-rule{border-top:1px solid var(--qj-line)}
+#qj-auto-language-prototype .qj-rule-actions{display:flex;gap:7px;align-items:center;flex-shrink:0}
+#qj-auto-language-prototype .qj-rule select{font-size:12px;max-width:125px}
+#qj-auto-language-prototype .qj-remove{background:transparent;border:0;padding:6px;color:var(--qj-muted)}
+#qj-auto-language-prototype .qj-secondary,#qj-auto-language-prototype .qj-footnote{color:var(--qj-muted);font-size:12px}
+#qj-auto-language-prototype .qj-footnote{margin-top:19px}
+#qj-auto-language-prototype .qj-feedback{font-size:12px;color:var(--qj-green);min-height:20px;margin-top:9px}
+#qj-auto-language-prototype .qj-empty{padding:25px 17px;color:var(--qj-muted);font-size:12px}
+#qj-auto-language-prototype .qj-osd{position:absolute;top:16px;right:18px;z-index:4;display:flex;align-items:center;gap:12px;background:var(--qj-surface);border:1px solid var(--qj-line);border-radius:12px;padding:14px 19px;box-shadow:0 8px 24px #0002;pointer-events:none;max-width:calc(100% - 32px)}
+#qj-auto-language-prototype #qj-osd-mark{background:var(--qj-active);color:var(--qj-green);border-radius:8px;padding:4px 8px;font-size:20px}
+#qj-auto-language-prototype .qj-overlay{position:absolute;inset:0;z-index:3;background:#0006;border-radius:14px;padding:22px;display:flex;align-items:center;justify-content:center}
+#qj-auto-language-prototype .qj-picker{width:510px;max-width:100%;background:var(--qj-bg);border:1px solid var(--qj-line);border-radius:14px;padding:22px;box-shadow:0 15px 50px #0003}
+#qj-auto-language-prototype .qj-picker-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}
+#qj-auto-language-prototype .qj-picker-head h3{font-size:18px}
+#qj-auto-language-prototype .qj-picker-head p{font-size:12px;color:var(--qj-muted);margin-top:5px}
+#qj-auto-language-prototype #qj-close{border:0;background:transparent;padding:4px}
+#qj-auto-language-prototype .qj-recents{display:grid;gap:3px}
+#qj-auto-language-prototype .qj-recent{width:100%;background:transparent;border:1px solid transparent;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:10px;padding:7px 9px;min-height:48px}
+#qj-auto-language-prototype .qj-recent[aria-pressed="true"]{background:var(--qj-active);border-color:var(--qj-green)}
+#qj-auto-language-prototype .qj-recent .qj-app-icon{width:30px;height:30px;border-radius:7px}
+#qj-auto-language-prototype .qj-recent-state{font-size:12px;color:var(--qj-muted);white-space:nowrap}
+#qj-auto-language-prototype .qj-picker-help{font-size:12px;color:var(--qj-muted);margin:15px 0}
+#qj-auto-language-prototype .qj-picker-footer{display:flex;gap:9px;align-items:center;border-top:1px solid var(--qj-line);padding-top:15px;flex-wrap:wrap}
+#qj-auto-language-prototype .qj-picker-footer label{font-size:12px;flex:1}
+#qj-auto-language-prototype .qj-primary{background:var(--qj-accent);color:var(--qj-onaccent);border-color:var(--qj-accent)}
+#qj-auto-language-prototype .qj-primary:hover{background:var(--qj-accent)}
+#qj-auto-language-prototype .qj-demo{padding:19px 0 0}
+#qj-auto-language-prototype .qj-demo-title{font-size:12px;color:var(--qj-muted);margin-bottom:9px}
+#qj-auto-language-prototype .qj-demo-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#qj-auto-language-prototype .qj-demo-controls label{font-size:12px}
+#qj-auto-language-prototype .qj-demo-controls select,#qj-auto-language-prototype .qj-demo-controls button{font-size:12px}
+#qj-auto-language-prototype #qj-demo-status{font-size:12px;color:var(--qj-muted);margin-top:9px}
+@media(max-width:760px){#qj-auto-language-prototype .qj-window{grid-template-columns:1fr}#qj-auto-language-prototype .qj-sidebar{padding:13px 17px;border-radius:14px 14px 0 0;display:flex;flex-direction:row;align-items:center;gap:15px}#qj-auto-language-prototype .qj-traffic,#qj-auto-language-prototype .qj-sidebar-footer{display:none}#qj-auto-language-prototype .qj-brand{font-size:18px;padding:0}#qj-auto-language-prototype .qj-navigation>span:not(.qj-nav-selected){display:none}#qj-auto-language-prototype .qj-navigation>span{padding:6px 8px;font-size:12px}#qj-auto-language-prototype .qj-content{padding:24px 20px}#qj-auto-language-prototype .qj-current{gap:13px}#qj-auto-language-prototype .qj-overlay{padding:12px}#qj-auto-language-prototype .qj-picker{padding:17px}}
+@media(max-width:420px){#qj-auto-language-prototype h2{font-size:19px}#qj-auto-language-prototype .qj-content{padding:20px 13px}#qj-auto-language-prototype .qj-setting{padding:13px;flex-wrap:wrap}#qj-auto-language-prototype .qj-setting:first-child{flex-wrap:nowrap}#qj-auto-language-prototype .qj-rule{padding:12px;flex-wrap:wrap}#qj-auto-language-prototype .qj-rule-actions{margin-left:46px}#qj-auto-language-prototype .qj-recent-state{font-size:11px}#qj-auto-language-prototype .qj-picker{padding:13px}#qj-auto-language-prototype .qj-picker-footer label{flex-basis:100%}#qj-auto-language-prototype .qj-overlay{align-items:flex-start;padding-top:50px}#qj-auto-language-prototype .qj-window{min-height:950px}}
+@media(pointer:coarse){#qj-auto-language-prototype button,#qj-auto-language-prototype select{min-height:44px}#qj-auto-language-prototype .qj-switch{width:44px;height:28px}#qj-auto-language-prototype .qj-switch>span:after{width:22px;height:22px}#qj-auto-language-prototype .qj-picker{padding:13px}}
+</style>
+<script>
+(()=>{
+ const root=document.getElementById('qj-auto-language-prototype');
+ const el=id=>root.querySelector('#'+id);
+ const apps=[
+  {id:'com.microsoft.VSCode',name:'Visual Studio Code',icon:'square-code'},
+  {id:'com.openai.chat',name:'ChatGPT',icon:'messages-square'},
+  {id:'com.apple.Terminal',name:'Terminal',icon:'terminal'},
+  {id:'com.apple.Safari',name:'Safari',icon:'compass'},
+  {id:'com.apple.Notes',name:'备忘录',icon:'notebook-pen'},
+  {id:'com.tinyspeck.slackmacgap',name:'Slack',icon:'message-square'},
+  {id:'md.obsidian',name:'Obsidian',icon:'notebook'},
+  {id:'com.apple.finder',name:'访达',icon:'folder'},
+  {id:'com.apple.dt.Xcode',name:'Xcode',icon:'hammer'},
+  {id:'com.apple.mail',name:'邮件',icon:'mail'},
+  {id:'com.tencent.xinWeChat',name:'微信',icon:'messages-square'}
+ ];
+ const state={enabled:false,defaultLanguage:'chinese',showHint:true,current:apps[0].id,actual:'chinese',manual:false,recent:apps.slice(0,10).map(a=>a.id),rules:{'com.microsoft.VSCode':'english','com.openai.chat':'chinese','com.apple.Terminal':'english'},selected:apps[0].id,chosen:'english'};
+ // 模拟 macOS 当前可用输入模式；正式实现由输入法的能力列表提供，不取辅助译文语言表。
+ const inputModes=[{id:'chinese',label:'中文输入',mark:'中'},{id:'english',label:'英文输入',mark:'英'},{id:'vietnamese',label:'越南语输入',mark:'越'}];
+ const lang={...Object.fromEntries(inputModes.map(mode=>[mode.id,mode.label])),default:'跟随默认'};
+ let osdTimer;
+ const pendingRules=new Set();
+ const find=id=>apps.find(a=>a.id===id);
+ const target=id=>state.rules[id]&&state.rules[id]!=='default'?state.rules[id]:state.defaultLanguage;
+ const icon=name=>'<i data-lucide="'+name+'" aria-hidden="true"></i>';
+ const info=(app,detail='')=>'<div class="qj-app-info"><span class="qj-app-icon">'+icon(app.icon)+'</span><div class="qj-app-label">'+app.name+(detail?'<div class="qj-app-detail">'+detail+'</div>':'')+'</div></div>';
+ const options=(value,allowDefault=true)=>Object.entries(lang).filter(([id])=>allowDefault||id!=='default').map(([id,label])=>'<option value="'+id+'"'+(value===id?' selected':'')+'>'+label+'</option>').join('');
+ const icons=()=>{if(globalThis.lucide)globalThis.lucide.createIcons({attrs:{width:18,height:18}})};
+ function announce(message){el('qj-feedback').textContent=message;}
+ function showOsd(language){clearTimeout(osdTimer);el('qj-osd-mark').textContent=inputModes.find(mode=>mode.id===language).mark;el('qj-osd-text').textContent='已切换到'+lang[language];el('qj-osd').hidden=false;osdTimer=setTimeout(()=>{el('qj-osd').hidden=true},850);}
+ function render(){
+  const current=find(state.current), configured=state.rules[state.current];
+  el('qj-enabled').checked=state.enabled;
+  el('qj-default').value=state.defaultLanguage;
+  el('qj-hint').checked=state.showHint;
+  el('qj-preview').disabled=!state.showHint;
+  el('qj-current-app').innerHTML=info(current,'当前：'+lang[state.actual]+(state.manual?'（手动）':'')+' · '+(configured?'已设置：'+lang[configured]:'未设置'));
+  el('qj-current-language').innerHTML=(configured?'':'<option value="" disabled selected>选择输入语言</option>')+options(configured);
+  el('qj-rule-count').textContent=Object.keys(state.rules).length;
+  el('qj-rules').innerHTML=Object.entries(state.rules).map(([id,language])=>'<div class="qj-rule" data-rule="'+id+'">'+info(find(id))+'<div class="qj-rule-actions"><select aria-label="'+find(id).name+' 的输入语言" data-rule-language="'+id+'">'+options(language)+'</select><button type="button" class="qj-remove" data-remove="'+id+'" aria-label="移除 '+find(id).name+' 的规则">'+icon('trash-2')+'</button></div></div>').join('')||'<div class="qj-empty">还没有应用规则。从刚才使用的应用开始设置。</div>';
+  el('qj-demo-status').textContent=(state.enabled?'自动切换已开启':'自动切换已关闭')+' · '+current.name+' · 当前'+lang[state.actual]+(state.manual?'（本次手动切换）':'')+' · 最近应用 '+state.recent.length+'/10';
+  renderRecents();icons();
+ }
+ function renderRecents(){
+  el('qj-recents').innerHTML=state.recent.map((id,index)=>{const app=find(id),configured=state.rules[id];return '<button type="button" class="qj-recent" data-recent="'+id+'" aria-pressed="'+(id===state.selected)+'">'+info(app,index===0?'刚才使用':'')+'<span class="qj-recent-state">'+(configured?'已设置 · '+lang[configured]:'未设置')+'</span></button>'}).join('');
+  el('qj-picker-language').value=state.chosen;
+  el('qj-save').textContent=state.rules[state.selected]?'更新设置':'保存设置';
+ }
+ function save(id,language){state.rules[id]=language;pendingRules.add(id);render();announce('已将 '+find(id).name+' 设为'+lang[language]+'，下次进入该应用时生效。');}
+ function closePicker(){el('qj-picker-overlay').hidden=true;el('qj-add').focus();}
+ el('qj-add').onclick=()=>{state.selected=state.recent[0];state.chosen=state.rules[state.selected]||'default';renderRecents();icons();el('qj-picker-overlay').hidden=false;el('qj-close').focus();};
+ el('qj-close').onclick=closePicker;
+ el('qj-recents').onclick=event=>{const button=event.target.closest('[data-recent]');if(!button)return;state.selected=button.dataset.recent;state.chosen=state.rules[state.selected]||'default';renderRecents();icons();el('qj-recents').querySelector('[data-recent="'+state.selected+'"]').focus();};
+ el('qj-picker-language').onchange=event=>{state.chosen=event.target.value;};
+ el('qj-save').onclick=()=>{save(state.selected,state.chosen);closePicker();};
+ el('qj-current-language').onchange=event=>save(state.current,event.target.value);
+ el('qj-rules').onchange=event=>{if(event.target.dataset.ruleLanguage)save(event.target.dataset.ruleLanguage,event.target.value);};
+ el('qj-rules').onclick=event=>{const button=event.target.closest('[data-remove]');if(!button)return;const app=find(button.dataset.remove);delete state.rules[app.id];pendingRules.add(app.id);render();announce('已移除 '+app.name+' 的规则，下次进入时跟随默认。');el('qj-add').focus();};
+ el('qj-enabled').onchange=event=>{state.enabled=event.target.checked;if(state.enabled)pendingRules.add(state.current);render();announce(state.enabled?'已开启，下次进入应用时自动切换。':'已关闭，当前语言保持不变。');};
+ el('qj-default').onchange=event=>{state.defaultLanguage=event.target.value;apps.filter(app=>!state.rules[app.id]||state.rules[app.id]==='default').forEach(app=>pendingRules.add(app.id));render();announce('默认语言已设为'+lang[state.defaultLanguage]+'。');};
+ el('qj-hint').onchange=event=>{state.showHint=event.target.checked;if(!state.showHint){clearTimeout(osdTimer);el('qj-osd').hidden=true;}render();};
+ el('qj-preview').onclick=()=>showOsd(target(state.current));
+ el('qj-demo-app').innerHTML=apps.map(a=>'<option value="'+a.id+'">'+a.name+'</option>').join('');
+ el('qj-demo-visit').onclick=()=>{const id=el('qj-demo-app').value;const previous=state.actual;const changed=id!==state.current;const apply=state.enabled&&(changed||pendingRules.has(id));state.recent=[id,...state.recent.filter(value=>value!==id)].slice(0,10);state.current=id;if(apply){state.actual=target(id);state.manual=false;pendingRules.delete(id);}render();announce('最近使用：'+find(id).name+'。'+(apply?'已应用该应用的语言设置。':changed?'已模拟进入该应用。':'仍在同一应用，保持当前模式。'));if(state.showHint&&state.actual!==previous)showOsd(state.actual);};
+ el('qj-demo-manual').onclick=()=>{const previous=state.actual;state.actual=el('qj-demo-language').value;state.manual=true;render();announce('本次手动使用'+lang[state.actual]+'，应用默认设置不变。');if(state.showHint&&state.actual!==previous)showOsd(state.actual);};
+ root.addEventListener('keydown',event=>{if(el('qj-picker-overlay').hidden)return;if(event.key==='Escape'){event.preventDefault();closePicker();}if(event.key==='Tab'){const focusables=[...el('qj-picker-overlay').querySelectorAll('button,select')];const first=focusables[0],last=focusables[focusables.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}});
+ el('qj-default').innerHTML=options(state.defaultLanguage,false);
+ el('qj-picker-language').innerHTML=options(state.chosen);
+ el('qj-demo-language').innerHTML=options('english',false);
+ render();
+ if(globalThis.Tweak){const design={rowHeight:48};const tweak=new globalThis.Tweak({container:el('qj-recents'),onChange:()=>{root.querySelectorAll('.qj-recent').forEach(row=>{row.style.minHeight=design.rowHeight+'px';});}});tweak.addSlider(design,'rowHeight',{label:'最近应用行高',min:48,max:58,step:2,unit:'px'});}
+})();
+</script>
