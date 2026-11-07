@@ -21,6 +21,8 @@ description: 青简在 macOS、Windows 与 Linux 上的缺省按键：切换、�
 
 macOS 上若在系统设置里打开了用 Caps Lock 切换「ABC」的选项，Caps Lock 会被系统拿去切换输入法，青简自己的英文模式就用不到了，见 [中英文](../input/english-mode.md)。
 
+macOS 开启[自动语言](../input/auto-language.md)后，应用规则只在进入应用时设置语言；本次使用中仍可用已配置的按键手动切换。没有勾选单击 Shift 时，Caps Lock 每次变化都会切换当前中英模式；关掉自动语言不会突然改变当前语言。勾选单击 Shift 时，Caps Lock 仍只控制大小写。
+
 Windows 与 Linux 的中 / 英切换键还可以选单击 `Ctrl` 或 `Ctrl + Alt + Space`，见 [中英文](../input/english-mode.md#改掉或关掉中-英切换)。
 
 ## 打拼音时

@@ -222,6 +222,7 @@ define_class!(
         #[unsafe(method(tick:))]
         fn tick(&self, _timer: Option<&AnyObject>) {
             let switched = crate::host::with(|h| {
+                h.poll_auto_language();
                 let switched = h.resolve_pending_shift();
                 h.refresh_mode_ui();
                 switched

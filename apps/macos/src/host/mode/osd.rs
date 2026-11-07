@@ -29,13 +29,13 @@ const PAD: f64 = 16.0;
 const MARGIN: f64 = 14.0;
 
 /// 显示多久（秒）。
-const SHOW_SECONDS: f64 = 0.9;
+const SHOW_SECONDS: f64 = 0.85;
 
 /// 和候选窗同一层级（见 `candidates/window.rs` 的说明）。
 const LEVEL: NSWindowLevel = 101;
 
 /// 字号。
-const FONT_SIZE: f64 = 24.0;
+const FONT_SIZE: f64 = 18.0;
 
 /// 角半径。
 const CORNER: f64 = 12.0;

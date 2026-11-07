@@ -6,6 +6,7 @@
 //! 设置窗口、手改文件被监视到，全都走它；三个入口都只写 `config.toml`，不各存一套状态。
 
 mod aux_code;
+mod auto_language;
 mod clipboard_process;
 mod cloud;
 mod config;
@@ -86,6 +87,8 @@ pub struct Host {
 
     /// 单击 Shift 切中英（勾了 `[shortcut] switch_mode` 的 shift 时）；定时器只在激活期间跑。
     pub mode_switch: ModeSwitch,
+
+    auto_language: auto_language::AutoLanguageState,
 
     /// 越南语 Simple Telex 的当前词；只在双击 Shift 切出的第三输入法中使用。
     pub vietnamese: TelexComposer,

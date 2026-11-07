@@ -17,7 +17,7 @@
 ## 已有接入条件
 
 - macOS 的 `activateServer:` 已能取得输入客户端 bundle ID：`apps/macos/src/imk/controller/mod.rs`。`apps/macos/src/imk/controller/display.rs` 的 `note_application` 还会在按键时补查，适合首次激活尚未取得标识的情况。
-- 实际用户中英状态由 `apps/macos/src/host/mode/switch.rs` 中的 `Host::english_mode` 与 `ModeSwitch` 决定。
+- 实际用户中英状态由 `apps/macos/src/host/mode/switch/mod.rs` 中的 `Host::english_mode` 与 `ModeSwitch` 决定。
 - 不能直接以 `Engine::set_english_mode` 充当用户模式开关：`apps/macos/src/imk/controller/text.rs` 每键将其写成英文候选分流状态。自动切换必须经过 Host 的统一模式设置通路，更新输入状态、菜单栏提示与候选显示。
 - `crates/qingjian-platform/src/config/apps.rs` 当前只控制哪些应用显示英文候选，并不设置该应用的输入语言。
 - `default_english` 与 `remember_mode_per_app` 虽已有配置字段，macOS 的支持表仍标为待实现。不能把当前 Windows 的按应用记忆描述成 macOS 已有能力。

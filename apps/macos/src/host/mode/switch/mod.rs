@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 use crate::imk::modifiers;
 
 use crate::host::Host;
+use qingjian_platform::InputLanguage;
 
 /// 只用单击 Shift 时沿用原来的防抖窗口；开了双击 Shift 后缩短，免得吞掉第二次按下。
 const SINGLE_TAP_COOLDOWN: Duration = Duration::from_millis(150);
@@ -60,6 +61,11 @@ pub struct ModeSwitch {
 
     /// 第一下完整 Shift 单击等待第二下；超时后才落实成单击，避免双击时先闪一次中间状态。
     pending_tap: Option<Instant>,
+
+    /// 自动规则接管后的持久状态；停用自动后也保留，避免与物理 Caps 状态交接时跳变。
+    explicit_mode: bool,
+
+    last_caps: bool,
 }
 
 impl ModeSwitch {
@@ -83,11 +89,16 @@ impl ModeSwitch {
 
     pub fn set_english_off(&mut self, off: bool) {
         self.english_off = off;
+        if off {
+            self.english = false;
+            self.vietnamese = false;
+            self.reset();
+        }
     }
 
     pub fn set_third_enabled(&mut self, enabled: bool) {
         self.third_enabled = enabled;
-        if !enabled {
+        if !enabled && !self.explicit_mode {
             self.vietnamese = false;
             self.pending_tap = None;
         }
@@ -100,7 +111,7 @@ impl ModeSwitch {
         }
         self.enabled = enabled;
         // 关掉时退回中文，免得留着上次切出来的英文模式
-        if !enabled {
+        if !enabled && !self.explicit_mode {
             self.english = false;
             self.vietnamese = false;
             self.pending_tap = None;
@@ -112,6 +123,40 @@ impl ModeSwitch {
     pub fn reset(&mut self) {
         self.pending = None;
         self.pending_tap = None;
+    }
+
+    /// 规则只设置输入模式，不改变用户的 Shift 快捷键或物理 Caps Lock。
+    pub fn set_language(&mut self, language: InputLanguage, caps: bool) {
+        self.explicit_mode = true;
+        self.last_caps = caps;
+        self.english = language == InputLanguage::English;
+        self.vietnamese = language == InputLanguage::Vietnamese;
+        if self.english || self.vietnamese {
+            self.last_foreign_vietnamese = self.vietnamese;
+        }
+        self.reset();
+    }
+
+    pub fn explicit_mode(&self) -> bool {
+        self.explicit_mode
+    }
+
+    pub fn rebase_caps(&mut self, caps: bool) {
+        self.last_caps = caps;
+    }
+
+    /// 没选 Shift 时 Caps 仍手动切中英，以边沿修改当前模式，不用灯位覆盖应用规则。
+    pub fn sync_caps(&mut self, caps: bool) -> bool {
+        let changed = caps != self.last_caps;
+        self.last_caps = caps;
+        if !changed || !self.explicit_mode || self.enabled || self.english_off {
+            return false;
+        }
+        self.english = !self.english;
+        self.vietnamese = false;
+        self.last_foreign_vietnamese = false;
+        self.reset();
+        true
     }
 
     /// 任一普通按键按下：Shift 按下到抬起之间插了别的键，这次不算单击。
@@ -153,7 +198,7 @@ impl ModeSwitch {
         } else if self.vietnamese {
             self.last_foreign_vietnamese = true;
             self.vietnamese = false;
-        } else if self.last_foreign_vietnamese && self.third_enabled {
+        } else if self.last_foreign_vietnamese && (self.third_enabled || self.explicit_mode) {
             self.vietnamese = true;
         } else {
             self.english = true;
@@ -184,6 +229,10 @@ impl ModeSwitch {
     }
 
     fn shift_event_at(&mut self, key_code: u16, down: bool, now: Instant) -> bool {
+        if self.english_off {
+            self.reset();
+            return false;
+        }
         if !self.enabled && !self.third_enabled {
             return false;
         }
@@ -241,6 +290,7 @@ impl Host {
         if !switched {
             return false;
         }
+        self.note_manual_language();
         tracing::info!(
             english = self.english_mode(),
             vietnamese = self.vietnamese_mode(),
@@ -256,7 +306,7 @@ impl Host {
         if self.mode_switch.vietnamese() || self.mode_switch.english_off() {
             return false;
         }
-        if self.mode_switch.enabled() {
+        if self.mode_switch.enabled() || self.mode_switch.explicit_mode() {
             self.mode_switch.english()
         } else {
             modifiers::caps_lock_on()
@@ -264,7 +314,7 @@ impl Host {
     }
 
     pub fn vietnamese_mode(&self) -> bool {
-        self.mode_switch.vietnamese()
+        !self.mode_switch.english_off() && self.mode_switch.vietnamese()
     }
 
     /// 英文模式下一个字母要不要大写：勾了「单击 Shift」时 Caps Lock 只管大小写（与 Shift 异或）；
@@ -286,6 +336,7 @@ impl Host {
         if !switched {
             return false;
         }
+        self.note_manual_language();
         tracing::info!(
             english = self.english_mode(),
             vietnamese = self.vietnamese_mode(),
@@ -301,12 +352,28 @@ impl Host {
     /// 中英变了显示「中」/「英」（优先）；只有大小写变了才显示「大写」/「小写」——后者出现在勾了
     /// 「单击 Shift」之后，那时 Caps Lock 退化成只管大小写。
     pub fn refresh_mode_ui(&mut self) {
+        if !self.auto_language.needs_caps_rebase
+            && self.mode_switch.sync_caps(modifiers::caps_lock_on())
+        {
+            self.note_manual_language();
+        }
         let english = self.english_mode();
         let vietnamese = self.vietnamese_mode();
         self.indicator.update(english, vietnamese);
         let caps = modifiers::caps_lock_on();
         // 第一次只记不弹：启动或刚激活时不该凭空冒一个提示
-        if self
+        let language_changed = self
+            .last_osd_vietnamese
+            .is_some_and(|last| last != vietnamese)
+            || self.last_osd_english.is_some_and(|last| last != english);
+        if self.auto_language.enabled {
+            if language_changed && self.settings.config().auto_language.show_switch_hint {
+                self.osd
+                    .show(qingjian_platform::auto_language::language_hint(
+                        self.current_input_language(),
+                    ));
+            }
+        } else if self
             .last_osd_vietnamese
             .is_some_and(|last| last != vietnamese)
         {
@@ -329,8 +396,10 @@ impl Host {
 
     /// 停用时忘掉已提示过的状态：下次激活的第一次刷新只记不弹，焦点来回挪不至于弹提示。
     pub fn forget_osd_state(&mut self) {
-        self.last_osd_english = None;
-        self.last_osd_vietnamese = None;
+        if !self.auto_language.enabled {
+            self.last_osd_english = None;
+            self.last_osd_vietnamese = None;
+        }
         self.last_osd_caps = None;
     }
 
@@ -342,6 +411,7 @@ impl Host {
             let switched = if self.mode_switch.has_pending_tap() && self.mode_switch.enabled() {
                 self.mode_switch.pending_tap = None;
                 self.mode_switch.single_switch();
+                self.note_manual_language();
                 self.refresh_mode_ui();
                 true
             } else {
@@ -357,162 +427,4 @@ impl Host {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::time::{Duration, Instant};
-
-    use super::ModeSwitch;
-
-    const LEFT_SHIFT: u16 = 56;
-
-    fn enabled() -> ModeSwitch {
-        let mut switch = ModeSwitch::default();
-        switch.set_enabled(true);
-        switch
-    }
-
-    #[test]
-    fn a_bounce_right_after_switching_is_ignored() {
-        let mut switch = enabled();
-        let start = Instant::now();
-        let at = |ms| start + Duration::from_millis(ms);
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(switch.shift_event_at(LEFT_SHIFT, false, at(80)));
-        // 松开后 10 ms 补来的一对按下 / 抬起
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(90)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(95)));
-        assert!(switch.english());
-        // 冷却过后的下一次单击照常切回
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(400)));
-        assert!(switch.shift_event_at(LEFT_SHIFT, false, at(480)));
-        assert!(!switch.english());
-    }
-
-    #[test]
-    fn holding_shift_too_long_is_not_a_tap() {
-        let mut switch = enabled();
-        let start = Instant::now();
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, start));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, start + Duration::from_millis(900)));
-        assert!(!switch.english());
-    }
-
-    #[test]
-    fn double_shift_toggles_the_third_input_method() {
-        let mut switch = enabled();
-        switch.set_third_enabled(true);
-        let start = Instant::now();
-        let at = |ms| start + Duration::from_millis(ms);
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(40)));
-        assert!(!switch.english(), "第一下待定，不先闪英文");
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(90)));
-        assert!(switch.shift_event_at(LEFT_SHIFT, false, at(120)));
-        assert!(switch.vietnamese());
-        assert!(!switch.english());
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(220)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(250)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(300)));
-        assert!(switch.shift_event_at(LEFT_SHIFT, false, at(330)));
-        assert!(switch.english());
-        assert!(!switch.vietnamese());
-    }
-
-    #[test]
-    fn double_shift_works_without_single_shift_switching() {
-        let mut switch = ModeSwitch::default();
-        switch.set_third_enabled(true);
-        let start = Instant::now();
-        let at = |ms| start + Duration::from_millis(ms);
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(40)));
-        assert!(!switch.english());
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(90)));
-        assert!(switch.shift_event_at(LEFT_SHIFT, false, at(120)));
-        assert!(switch.vietnamese());
-    }
-
-    #[test]
-    fn a_fast_human_double_tap_is_not_mistaken_for_keyboard_bounce() {
-        let mut switch = enabled();
-        switch.set_third_enabled(true);
-        let start = Instant::now();
-        let at = |ms| start + Duration::from_millis(ms);
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(30)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(80)));
-        assert!(switch.shift_event_at(LEFT_SHIFT, false, at(110)));
-        assert!(switch.vietnamese());
-    }
-
-    #[test]
-    fn cooldown_is_150ms_without_double_shift_and_50ms_with_it() {
-        let start = Instant::now();
-        let at = |ms| start + Duration::from_millis(ms);
-
-        let mut single = enabled();
-        assert!(!single.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(single.shift_event_at(LEFT_SHIFT, false, at(60)));
-        // 距上次切换 100 ms：没开双击时仍按原来的 150 ms 防抖丢掉。
-        assert!(!single.shift_event_at(LEFT_SHIFT, true, at(160)));
-        assert!(!single.shift_event_at(LEFT_SHIFT, false, at(210)));
-        assert!(single.english());
-
-        let mut double = enabled();
-        double.set_third_enabled(true);
-        assert!(!double.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(!double.shift_event_at(LEFT_SHIFT, false, at(40)));
-        // 距上次边沿超过 50 ms，且第二次抬起仍在首个抬起后的 400 ms 内。
-        assert!(!double.shift_event_at(LEFT_SHIFT, true, at(100)));
-        assert!(double.shift_event_at(LEFT_SHIFT, false, at(130)));
-        assert!(double.vietnamese());
-    }
-
-    #[test]
-    fn single_shift_returns_to_the_last_foreign_language() {
-        let mut switch = enabled();
-        switch.set_third_enabled(true);
-        let start = Instant::now();
-        let at = |ms| start + Duration::from_millis(ms);
-
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(30)));
-        assert!(!switch.resolve_pending_at(at(429)));
-        assert!(switch.resolve_pending_at(at(430)));
-        assert!(switch.english());
-
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(550)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(580)));
-        assert!(switch.resolve_pending_at(at(980)));
-        assert!(!switch.english());
-
-        // 中文双击换到另一个外文（越南语），不经过英文中间态。
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(1100)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(1130)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(1380)));
-        assert!(switch.shift_event_at(LEFT_SHIFT, false, at(1410)));
-        assert!(switch.vietnamese());
-
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(1520)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(1550)));
-        assert!(switch.resolve_pending_at(at(1950)));
-        assert!(!switch.vietnamese());
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(2070)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(2100)));
-        assert!(switch.resolve_pending_at(at(2500)));
-        assert!(switch.vietnamese(), "中文单击回到上次外文越南语");
-    }
-
-    #[test]
-    fn shift_single_does_nothing_when_only_double_shift_is_enabled() {
-        let mut switch = ModeSwitch::default();
-        switch.set_third_enabled(true);
-        let start = Instant::now();
-        let at = |ms| start + Duration::from_millis(ms);
-
-        assert!(!switch.shift_event_at(LEFT_SHIFT, true, at(0)));
-        assert!(!switch.shift_event_at(LEFT_SHIFT, false, at(30)));
-        assert!(!switch.resolve_pending_at(at(430)));
-        assert!(!switch.english());
-        assert!(!switch.vietnamese());
-    }
-}
+mod tests;

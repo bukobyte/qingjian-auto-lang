@@ -10,6 +10,8 @@
 #[cfg(target_os = "macos")]
 mod app;
 #[cfg(target_os = "macos")]
+mod auto_language;
+#[cfg(target_os = "macos")]
 mod candidates;
 #[cfg(target_os = "macos")]
 mod error;

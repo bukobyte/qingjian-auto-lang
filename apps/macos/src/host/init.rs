@@ -149,6 +149,7 @@ pub fn init(mtm: MainThreadMarker, info: &BundleInfo) -> Result<(), HostError> {
     let watch = ConfigWatch::new(mtm);
     let mode_switch = ModeSwitch::default();
     let osd = ModeOsd::new(mtm);
+    let auto_language = super::auto_language::AutoLanguageState::new(mtm, settings.path());
     HOST.with(|host| {
         *host.borrow_mut() = Some(Host {
             engine,
@@ -159,6 +160,7 @@ pub fn init(mtm: MainThreadMarker, info: &BundleInfo) -> Result<(), HostError> {
             settings,
             watch,
             mode_switch,
+            auto_language,
             vietnamese: Default::default(),
             vietnamese_words,
             vietnamese_glossary,

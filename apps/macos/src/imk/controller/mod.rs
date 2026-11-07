@@ -135,11 +135,12 @@ define_class!(
                     tracing::info!(%bundle, "当前应用");
                 }
                 host::with(|h| {
-                    h.engine.set_application(bundle);
+                    h.engine.set_application(bundle.clone());
                     h.engine.enter_input_box();
                     h.refresh_text_replacements();
                     h.reload_config_if_changed();
                     h.mode_switch.reset();
+                    h.prepare_auto_language(bundle.as_deref());
                     let english = h.english_mode();
                     let vietnamese = h.vietnamese_mode();
                     h.indicator.activate(english, vietnamese);
@@ -264,6 +265,12 @@ impl QingjianInputController {
 
     /// 一个按键事件的分发：只管按下；配置的组合键先处理，其他 Cmd / Ctrl 组合交给应用；命令键映射成选择器。
     fn dispatch_event(&self, event: &NSEvent, client: TextClient<'_>) -> bool {
+        let app_id = client.bundle_identifier();
+        host::with(|h| {
+            h.reload_config_if_changed();
+            h.engine.set_application(app_id.clone());
+            h.prepare_auto_language(app_id.as_deref());
+        });
         // 修饰键事件（`recognizedEvents:` 声明了 flagsChanged 才有）：Shift 的按下 / 抬起在这里，
         // 是精确边沿。事件本身继续照常交给系统，不吞。
         if event.r#type() == NSEventType::FlagsChanged {

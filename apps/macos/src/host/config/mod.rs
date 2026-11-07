@@ -76,6 +76,7 @@ impl Host {
         self.mode_switch.set_third_enabled(
             config.general.double_shift_input == qingjian_platform::ThirdInputMethod::Vietnamese,
         );
+        self.configure_auto_language(&config.auto_language);
         if config.shortcut.switch_mode.control || config.shortcut.switch_mode.ctrl_alt_space {
             tracing::warn!(
                 "macOS 只支持单击 Shift 作为中英切换键，配置文件里写的 control / ctrl+alt+space 已忽略"
